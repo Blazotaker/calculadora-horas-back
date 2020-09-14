@@ -11,7 +11,7 @@ public class ServicioMapper implements RowMapper<Servicio> {
     public Servicio mapRow(ResultSet resultSet, int i) throws SQLException {
         Servicio servicio = new Servicio();
         servicio.setIdTecnico(resultSet.getString("id_tecnico"));
-        servicio.setIdTipoServicio(resultSet.getString("id_tecnico"));
+        servicio.setIdTipoServicio(resultSet.getString("id_tipo_servicio"));
         servicio.setFechaInicio(resultSet.getTimestamp("fecha_inicio").toLocalDateTime());
         servicio.setFechaFin(resultSet.getTimestamp("fecha_fin").toLocalDateTime());
         /*resultSet.getLong("id_servicio"),

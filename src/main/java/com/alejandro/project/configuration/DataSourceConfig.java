@@ -15,12 +15,12 @@ import javax.sql.DataSource;
 @EnableConfigurationProperties(DataSourceProperties.class)
 public class DataSourceConfig {
     @Bean
-    public DataSource postgresDataSource(DataSourceProperties properties) {
-        String url = String.format("jdbc:mysql://%s:%s/%s?serverTimezone=UTC", properties.getHost(), properties.getPort(), properties.getDb());
+    public DataSource DataSource(DataSourceProperties properties) {
+        String url = String.format("jdbc:postgresql://%s:%s/%s", properties.getHost(), properties.getPort(), properties.getDb());
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(properties.getUsername());
-        //config.setPassword(properties.getPassword());
+        config.setPassword(properties.getPassword());
         return new HikariDataSource(config);
     }
 

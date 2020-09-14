@@ -7,8 +7,11 @@ import java.util.List;
 
 public interface IServicioDao  {
 
-    public void agregarServicio(Servicio servicio);
+    public Servicio agregarServicio(Servicio servicio);
 
-    public List<Servicio> listarServicios();
+    public List<Servicio> listarServiciosPorTecnico(String idTecnico);
+
+    //public boolean buscarPorServicio (Servicio servicio);
+    //public List<Servicio> todo ();
 
 }
