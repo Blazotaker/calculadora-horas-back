@@ -54,7 +54,7 @@ public class ServicioServiceImpl implements  IServicioService{
         if(idTecnico.equalsIgnoreCase("null")){
             respuesta.setError("No se aceptan campos nulos");
             return respuesta;
-        }else if ((semana == 0) || semana >= 53 ){
+        }else if ((semana == 0) || semana > 53 ){
             respuesta.setError("Revisar semana");
             return respuesta;
         }
