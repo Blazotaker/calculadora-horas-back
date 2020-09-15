@@ -2,7 +2,7 @@ package com.alejandro.project.service;
 
 import com.alejandro.project.dao.IServicioDao;
 import com.alejandro.project.exception.ResponseCalculoHoras;
-import com.alejandro.project.exception.ResponseCreate;
+import com.alejandro.project.exception.ResponseCrear;
 import com.alejandro.project.model.Servicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,16 +27,19 @@ public class ServicioServiceImpl implements  IServicioService{
     }
 
 
-
     @Override
-    public ResponseCreate agregarServicio(Servicio servicio) {
-        ResponseCreate respuesta = new ResponseCreate();
+    public ResponseCrear agregarServicio(Servicio servicio) {
+        ResponseCrear respuesta = new ResponseCrear();
+
         if(servicio.getIdTecnico() == null ||
             servicio.getIdTipoServicio() == null ||
                 servicio.getFechaInicio() == null ||
                 servicio.getFechaFin() == null
         ){
             respuesta.setError("No se aceptan campos nulos");
+            return respuesta;
+        }else if(buscarEntreFechas(servicioDao.buscarServiciosPorTecnico(servicio.getIdTecnico()),servicio)){
+            respuesta.setError("Las fechas que está intentando ingresar se cruza con alguna registrada");
             return respuesta;
         }
             respuesta.setServicio(servicioDao.agregarServicio(servicio));
@@ -55,14 +58,9 @@ public class ServicioServiceImpl implements  IServicioService{
             respuesta.setError("Las semanas no pueden empezar en 0");
             return respuesta;
         }
-        respuesta.setHoras( listarPorSemana(servicioDao.listarServiciosPorTecnico(idTecnico), semana));
+        respuesta.setHoras( listarPorSemana(servicioDao.buscarServiciosPorTecnico(idTecnico), semana));
         return respuesta;
     }
-
-   /* @Override
-    public List<Servicio> traerTodo() {
-        return servicioDao.todo();
-    }*/
 
     public  HashMap<String, Integer> listarPorSemana(List <Servicio> servicios,int semana){
         List <Servicio> serviciosSemana =
@@ -83,7 +81,6 @@ public class ServicioServiceImpl implements  IServicioService{
 
     public void  almacenarHora(HashMap<String, Integer> total, String tipo){
          total.replace(tipo, total.get(tipo)+1);
-         //return total;
     }
 
     public  HashMap<String, Integer> calcularHoras(List <Servicio> serviciosSemana){
@@ -97,67 +94,64 @@ public class ServicioServiceImpl implements  IServicioService{
         resultado.put("TotalHoras",0);
         LocalTime inicioJornada = LocalTime.of(7,0);
         LocalTime finJornada = LocalTime.of(20,0);
+        LocalTime mediaNoche = LocalTime.of(0,0);
 
         serviciosSemana.forEach(data -> {
             Duration p = Duration.between(data.getFechaInicio(), data.getFechaFin());
             long horas = Math.abs(p.toHours());
-            System.out.println(data);
-
             IntStream.range(0,(int) horas).forEach(i -> {
-                System.out.println(i);
                 LocalDateTime horasAEvaluar = data.getFechaInicio().plusHours(i);
                 if(validarHoraExtra(resultado.get("TotalHoras"))){
                     //Horas > 48
                     if(horasAEvaluar.getDayOfWeek().toString().equalsIgnoreCase("sunday")){
                         //Hora dominical
-                        System.out.println("Soy una hora dominical extra");
-                        //resultado.replace("HorasDominicalesExtra", resultado.get("HorasDominicalesExtra")+1);
                         almacenarHora(resultado,"HorasDominicalesExtra");
                     }else if(( horasAEvaluar.isAfter(LocalDateTime.of(horasAEvaluar.toLocalDate(),inicioJornada))  ||
                                 horasAEvaluar.isEqual(LocalDateTime.of(horasAEvaluar.toLocalDate(),inicioJornada))) &&
                                 horasAEvaluar.isBefore(LocalDateTime.of(horasAEvaluar.toLocalDate(),finJornada))){
-                        System.out.println("Soy una hora normal extra");
-                        //resultado.replace("HorasNormalesExtra", resultado.get("HorasNormalesExtra")+1);
                         almacenarHora(resultado,"HorasNormalesExtra");
-
                     }else if(horasAEvaluar.isAfter(LocalDateTime.of(horasAEvaluar.toLocalDate(),finJornada)) ||
                                     horasAEvaluar.isEqual(LocalDateTime.of(horasAEvaluar.toLocalDate(),finJornada)) &&
-                                    horasAEvaluar.isBefore(LocalDateTime.of(horasAEvaluar.toLocalDate().plusDays(1),inicioJornada))){
-                        System.out.println("Soy una hora nocturna extra");
-                        //resultado.replace("HorasNocturnasExtra", resultado.get("HorasNocturnasExtra")+1);
+                                    horasAEvaluar.isBefore(LocalDateTime.of(horasAEvaluar.toLocalDate().plusDays(1),inicioJornada)) ||
+                                    (horasAEvaluar.isAfter(LocalDateTime.of(horasAEvaluar.toLocalDate(),mediaNoche)) &&
+                                    horasAEvaluar.isBefore(LocalDateTime.of(horasAEvaluar.toLocalDate(),inicioJornada)))
+                    ){
                         almacenarHora(resultado,"HorasNocturnasExtra");
-
                     }
                 }else if(horasAEvaluar.getDayOfWeek().toString().equalsIgnoreCase("sunday")){
                     //Hora dominical
-                    System.out.println("Soy una hora dominical trabajo");
-                    //resultado.replace("HorasDominicales", resultado.get("HorasDominicales")+1);
                     almacenarHora(resultado,"HorasDominicales");
 
                 } else if( ( horasAEvaluar.isAfter(LocalDateTime.of(horasAEvaluar.toLocalDate(),inicioJornada)) ||
                         horasAEvaluar.isEqual(LocalDateTime.of(horasAEvaluar.toLocalDate(),inicioJornada))) &&
                         horasAEvaluar.isBefore(LocalDateTime.of(horasAEvaluar.toLocalDate(),finJornada)) ){
-                    System.out.println("Soy una hora normal");
-                    //resultado.replace("HorasNormales", resultado.get("HorasNormales")+1);
                     almacenarHora(resultado,"HorasNormales");
 
                 } else if((horasAEvaluar.isAfter(LocalDateTime.of(horasAEvaluar.toLocalDate(),finJornada)) ||
                         horasAEvaluar.isEqual(LocalDateTime.of(horasAEvaluar.toLocalDate(),finJornada))) &&
-                        horasAEvaluar.isBefore(LocalDateTime.of(horasAEvaluar.toLocalDate().plusDays(1),inicioJornada)) ){
-                    System.out.println("Soy una hora nocturna");
-                   // resultado.replace("HorasNocturnas", resultado.get("HorasNocturnas")+1);
+                        horasAEvaluar.isBefore(LocalDateTime.of(horasAEvaluar.toLocalDate().plusDays(1),inicioJornada)) ||(
+                        horasAEvaluar.isAfter(LocalDateTime.of(horasAEvaluar.toLocalDate(),mediaNoche)) &&
+                                horasAEvaluar.isBefore(LocalDateTime.of(horasAEvaluar.toLocalDate(),inicioJornada)))
+                ){
                     almacenarHora(resultado,"HorasNocturnas");
-
                 }
-                //resultado.replace("TotalHoras", resultado.get("TotalHoras")+1);
                 almacenarHora(resultado,"TotalHoras");
-                System.out.println(resultado);
             });
         });
-
-
-
         return resultado;
     }
+
+    public  boolean buscarEntreFechas(List <Servicio> servicios, Servicio servicio){
+        for(Servicio s : servicios){
+            if( (servicio.getFechaInicio().isAfter(s.getFechaInicio()) &&
+                    servicio.getFechaFin().isBefore(s.getFechaFin()))
+            ){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 
 }

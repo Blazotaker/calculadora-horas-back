@@ -9,9 +9,7 @@ public interface IServicioDao  {
 
     public Servicio agregarServicio(Servicio servicio);
 
-    public List<Servicio> listarServiciosPorTecnico(String idTecnico);
+    public List<Servicio> buscarServiciosPorTecnico(String idTecnico);
 
-    //public boolean buscarPorServicio (Servicio servicio);
-    //public List<Servicio> todo ();
 
 }

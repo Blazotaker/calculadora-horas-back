@@ -14,12 +14,7 @@ public class ServicioMapper implements RowMapper<Servicio> {
         servicio.setIdTipoServicio(resultSet.getString("id_tipo_servicio"));
         servicio.setFechaInicio(resultSet.getTimestamp("fecha_inicio").toLocalDateTime());
         servicio.setFechaFin(resultSet.getTimestamp("fecha_fin").toLocalDateTime());
-        /*resultSet.getLong("id_servicio"),
-        resultSet.getInt("id_tecnico"),
-                resultSet.getInt("id_tecnico"),
-                resultSet.getTimestamp("fecha_inicio").toLocalDateTime(),
-                resultSet.getTimestamp("fecha_fin").toLocalDateTime(),
-                resultSet.getTimestamp("creado")*/
+
         return servicio;
     }
 }
