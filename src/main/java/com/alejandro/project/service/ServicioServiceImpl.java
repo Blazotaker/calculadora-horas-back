@@ -54,8 +54,8 @@ public class ServicioServiceImpl implements  IServicioService{
         if(idTecnico.equalsIgnoreCase("null")){
             respuesta.setError("No se aceptan campos nulos");
             return respuesta;
-        }else if (semana == 0){
-            respuesta.setError("Las semanas no pueden empezar en 0");
+        }else if ((semana == 0) || semana >= 53 ){
+            respuesta.setError("Revisar semana");
             return respuesta;
         }
         respuesta.setHoras( listarPorSemana(servicioDao.buscarServiciosPorTecnico(idTecnico), semana));
