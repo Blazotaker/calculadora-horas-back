@@ -144,7 +144,9 @@ public class ServicioServiceImpl implements  IServicioService{
     public  boolean buscarEntreFechas(List <Servicio> servicios, Servicio servicio){
         for(Servicio s : servicios){
             if( (servicio.getFechaInicio().isAfter(s.getFechaInicio()) &&
-                    servicio.getFechaFin().isBefore(s.getFechaFin()))
+                    servicio.getFechaInicio().isBefore(s.getFechaFin())) ||
+                    (servicio.getFechaFin().isAfter(s.getFechaInicio()) &&
+                            servicio.getFechaFin().isBefore(s.getFechaFin()))
             ){
                 return true;
             }
